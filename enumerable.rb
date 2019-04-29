@@ -20,6 +20,11 @@ module Enumerable
     my_each {|i| array << i if yield(i)}
     array
   end
+
+  def my_all?
+    my_each {|i| return false if yield(i) == false}
+    true
+  end
   # rubocop:enable Style/For
 end
 
@@ -27,5 +32,6 @@ array = [3, 5, 1, 2, 3, 4, 5, 6, 8, 9, 45]
 
 # array.my_each { |number| puts number }
 # array.my_each_with_index { |number, index| puts "#{index}: #{number}" }
+# array.my_select {|x| x< 20}
 
-p array.my_select {|x| x< 20}
+p array.my_all? {|x| x< 20}
