@@ -14,10 +14,18 @@ module Enumerable
       counter += 1
       end
   end
+
+  def my_select
+    array = []
+    my_each {|i| array << i if yield(i)}
+    array
+  end
   # rubocop:enable Style/For
 end
 
 array = [3, 5, 1, 2, 3, 4, 5, 6, 8, 9, 45]
 
 # array.my_each { |number| puts number }
-array.my_each_with_index { |number, index| puts "#{index}: #{number}" }
+# array.my_each_with_index { |number, index| puts "#{index}: #{number}" }
+
+p array.my_select {|x| x< 20}
