@@ -64,6 +64,10 @@ module Enumerable
     inject
   end
 
+  def multiply_els(array)
+    array.my_inject { |mul, n| mul * n }
+  end
+
   # rubocop:enable Style/For
 end
 
