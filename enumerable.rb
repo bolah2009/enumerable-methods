@@ -14,6 +14,7 @@ module Enumerable
       counter += 1
       end
   end
+  # rubocop:enable Style/For
 
   def my_select
     array = []
@@ -26,6 +27,8 @@ module Enumerable
     true
   end
 
+  # rubocop:disable Metrics/AbcSize, Metrics/PerceivedComplexity
+  # rubocop:disable Metrics/CyclomaticComplexity
   def my_none?(arg = nil)
     if block_given?
       my_each { |i| return false if yield(i) == true }
@@ -39,6 +42,8 @@ module Enumerable
     true
   end
 
+  # rubocop:enable Metrics/AbcSize, Metrics/PerceivedComplexity
+  # rubocop:enable Metrics/CyclomaticComplexity
   def my_count(arg = nil)
     count = 0
     if block_given?
@@ -58,7 +63,7 @@ module Enumerable
   end
 
   def my_inject
-    array = self.to_a
+    array = to_a
     inject = array[0]
     array[1..-1].my_each { |i| inject = yield(inject, i) }
     inject
@@ -67,8 +72,4 @@ module Enumerable
   def multiply_els(array)
     array.my_inject { |mul, n| mul * n }
   end
-
-  # rubocop:enable Style/For
 end
-
-array = [3, 5, 1, 2, 3, 4, 5, 6, 8, 9, 45]
