@@ -56,6 +56,14 @@ module Enumerable
     my_each { |i| array << yield(i) }
     array
   end
+
+  def my_inject
+    array = self.to_a
+    inject = array[0]
+    array[1..-1].my_each { |i| inject = yield(inject, i) }
+    inject
+  end
+
   # rubocop:enable Style/For
 end
 
@@ -101,7 +109,15 @@ array = [3, 5, 1, 2, 3, 4, 5, 6, 8, 9, 45]
 # p ary.my_count{ |x| x%2==0 } #=> 3
 
 # my_map
-a = [ "a", "b", "c", "d" ]
-p a.map { |x| x + "!" } 
+# a = [ "a", "b", "c", "d" ]
+# p a.map { |x| x + "!" } 
+# puts '--------------------'
+# p a.my_map { |x| x + "!" } 
+
+
+# Same using a block and inject
+p (5..10).inject { |sum, n| sum + n }            #=> 151200
 puts '--------------------'
-p a.my_map { |x| x + "!" } 
+p (5..10).my_inject { |sum, n| sum + n }            #=> 151200
+
+p (5..10).my_inject { |sum, n| sum + n }  
