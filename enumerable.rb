@@ -50,6 +50,12 @@ module Enumerable
     end
     count
   end
+
+  def my_map
+    array = []
+    my_each { |i| array << yield(i) }
+    array
+  end
   # rubocop:enable Style/For
 end
 
@@ -84,12 +90,18 @@ array = [3, 5, 1, 2, 3, 4, 5, 6, 8, 9, 45]
 # p [nil, false, true].my_none?                           #=> false
 
 # my_count
-p ary = [1, 2, 4, 2]
-p ary.count               #=> 4
-p ary.count(2)            #=> 2
-p ary.count{ |x| x%2==0 } #=> 3
+# p ary = [1, 2, 4, 2]
+# p ary.count               #=> 4
+# p ary.count(2)            #=> 2
+# p ary.count{ |x| x%2==0 } #=> 3
+# puts '--------------------'
+# p ary = [1, 2, 4, 2]
+# p ary.my_count               #=> 4
+# p ary.my_count(2)            #=> 2
+# p ary.my_count{ |x| x%2==0 } #=> 3
+
+# my_map
+a = [ "a", "b", "c", "d" ]
+p a.map { |x| x + "!" } 
 puts '--------------------'
-p ary = [1, 2, 4, 2]
-p ary.my_count               #=> 4
-p ary.my_count(2)            #=> 2
-p ary.my_count{ |x| x%2==0 } #=> 3
+p a.my_map { |x| x + "!" } 
