@@ -29,6 +29,19 @@ module Enumerable
 
   # rubocop:disable Metrics/AbcSize, Metrics/PerceivedComplexity
   # rubocop:disable Metrics/CyclomaticComplexity
+  def my_any?(arg = nil)
+    if block_given?
+      my_each { |i| return true if yield(i) == true }
+    elsif arg.class == Class
+      my_each { |i| return true if i.class == arg }
+    elsif arg.class == Regexp
+      my_each { |i| return true if (i =~ arg).is_a? Integer }
+    elsif arg.nil?
+      my_each { |i| return true if i == true }
+    end
+    false
+  end
+
   def my_none?(arg = nil)
     if block_given?
       my_each { |i| return false if yield(i) == true }
