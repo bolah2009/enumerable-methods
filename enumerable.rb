@@ -34,9 +34,21 @@ module Enumerable
     elsif arg.class == Regexp
       my_each { |i| return false if (i =~ arg).is_a? Integer }
     elsif arg.nil?
-         my_each { |i| return false if i == true }
+      my_each { |i| return false if i == true }
     end
     true
+  end
+
+  def my_count(arg = nil)
+    count = 0
+    if block_given?
+      my_each { |i| count += 1 if yield(i) == true }
+    elsif arg.nil?
+      my_each { count += 1 }
+    else
+      my_each { |i| count += 1 if i == arg }
+    end
+    count
   end
   # rubocop:enable Style/For
 end
@@ -61,12 +73,23 @@ array = [3, 5, 1, 2, 3, 4, 5, 6, 8, 9, 45]
 # p [nil].none?                                        #=> true
 # p [nil, false].none?                                 #=> true
 # p [nil, false, true].none?                           #=> false
+# puts '--------------------'
+# p %w[ant bear cat].my_none? { |word| word.length == 5 } #=> true
+# p %w[ant bear cat].my_none? { |word| word.length >= 4 } #=> false
+# p %w[ant bear cat].my_none?(/d/)                        #=> true
+# p [1, 3.14, 42].my_none?(Float)                         #=> false
+# p [].my_none?                                           #=> true
+# p [nil].my_none?                                        #=> true
+# p [nil, false].my_none?                                 #=> true
+# p [nil, false, true].my_none?                           #=> false
+
+# my_count
+p ary = [1, 2, 4, 2]
+p ary.count               #=> 4
+p ary.count(2)            #=> 2
+p ary.count{ |x| x%2==0 } #=> 3
 puts '--------------------'
-p %w[ant bear cat].my_none? { |word| word.length == 5 } #=> true
-p %w[ant bear cat].my_none? { |word| word.length >= 4 } #=> false
-p %w[ant bear cat].my_none?(/d/)                        #=> true
-p [1, 3.14, 42].my_none?(Float)                         #=> false
-p [].my_none?                                           #=> true
-p [nil].my_none?                                        #=> true
-p [nil, false].my_none?                                 #=> true
-p [nil, false, true].my_none?                           #=> false
+p ary = [1, 2, 4, 2]
+p ary.my_count               #=> 4
+p ary.my_count(2)            #=> 2
+p ary.my_count{ |x| x%2==0 } #=> 3
