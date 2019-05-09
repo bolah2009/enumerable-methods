@@ -66,6 +66,18 @@ describe Enumerable do
         expect([nil, false, 3, 'hello'].my_any?).to be true
       end
     end
+
+    context 'when a class is passed as an argument' do
+      it 'returns true if at least one of the collection is a member of such class' do
+        expect([nil, false, 3, 'hello'].my_any?(Integer)).to be true
+      end
+    end
+
+    context 'when a Regex is passed as an argument' do
+      it 'returns false if none of the collection matches the Regex' do
+        expect([nil, false, 3, 'hello'].my_any?(/d/)).to be false
+      end
+    end
   end
 
   context '#my_none?' do
@@ -76,6 +88,18 @@ describe Enumerable do
     context 'when no block is given' do
       it 'return true only if none of the collection members is true' do
         expect([nil, false, nil, false].my_none?).to be true
+      end
+    end
+
+    context 'when a class is passed as an argument' do
+      it 'returns true if none of the collection is a member of such class' do
+        expect([nil, false, 3, ['hi']].my_none?(String)).to be true
+      end
+    end
+
+    context 'when a Regex is passed as an argument' do
+      it 'returns true only if none of the collection matches the Regex' do
+        expect([nil, false, 3, 'hi'].my_none?(/o/)).to be true
       end
     end
   end
