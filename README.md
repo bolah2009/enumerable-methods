@@ -1,5 +1,6 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/47dde54b3f4fddb0b16e/maintainability)](https://codeclimate.com/github/bolah2009/enumerable-methods/maintainability)     [![Test Coverage](https://api.codeclimate.com/v1/badges/47dde54b3f4fddb0b16e/test_coverage)](https://codeclimate.com/github/bolah2009/enumerable-methods/test_coverage)       [![Build](https://travis-ci.org/bolah2009/enumerable-methods.svg?branch=master)](https://travis-ci.org/bolah2009/enumerable-methods)
-# Project 2&3: Enumerable Methods in Ruby and testing with RSpec
+
+# Project 2 & 3: Enumerable Methods in Ruby and testing with RSpec
 
 ## PROJECT: ADVANCED BUILDING BLOCKS (Project 2: Enumerable Methods and Testing
 
