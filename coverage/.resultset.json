@@ -1,7 +1,7 @@
 {
   "RSpec": {
     "coverage": {
-      "/media/bolaah/BolahSD/WORKSPACE/WebProjects/microverse-student/enumerable-methods/spec/enumerable_spec.rb": [
+      "/media/bola/BolahSD/WORKSPACE/WebProjects/microverse-student/enumerable-methods/spec/enumerable_spec.rb": [
         1,
         null,
         1,
@@ -156,7 +156,7 @@
         null,
         null
       ],
-      "/media/bolaah/BolahSD/WORKSPACE/WebProjects/microverse-student/enumerable-methods/enumerable.rb": [
+      "/media/bola/BolahSD/WORKSPACE/WebProjects/microverse-student/enumerable-methods/lib/enumerable.rb": [
         null,
         1,
         null,
@@ -257,6 +257,6 @@
         null
       ]
     },
-    "timestamp": 1557369007
+    "timestamp": 1558818210
   }
 }

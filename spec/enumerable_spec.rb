@@ -1,4 +1,4 @@
-require './enumerable'
+require './lib/enumerable'
 
 describe Enumerable do
   context '#each' do
