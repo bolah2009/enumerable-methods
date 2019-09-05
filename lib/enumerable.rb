@@ -94,7 +94,7 @@ module Enumerable
   end
 
   def my_inject(arg_1 = nil, arg_2 = nil)
-    array = to_a
+    array = to_a.dup
     (inject, sym) = if arg_1.nil?
                       [array.shift, nil]
                     elsif arg_2.nil? && !block_given?
