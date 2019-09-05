@@ -1,150 +1,227 @@
-require './enumerable'
+# frozen_string_literal: true
 
-describe Enumerable do
-  context '#each' do
-    it 'calls the given block once for each element' do
-      expect([1, 2, 3, 4].my_each { |i| i }).to eq [1, 2, 3, 4]
+require 'rspec'
+require_relative '../lib/enumerable'
+
+ARRAY_SIZE = 100
+LOWEST_VALUE = 0
+HIGHEST_VALUE = 9
+
+describe 'enumerables' do
+  let(:array) { Array.new(ARRAY_SIZE) { rand(LOWEST_VALUE...HIGHEST_VALUE) } }
+  let(:block) { proc { |num| num < (LOWEST_VALUE + HIGHEST_VALUE) / 2 } }
+  let(:words) { %w[dog door rod blade] }
+  let(:range) { Range.new(5, 50) }
+
+  describe 'my_each' do
+    it 'calls the given block once for each element in self' do
+      my_each_output = ''
+      block = proc { |num| my_each_output += num.to_s }
+      array.each(&block)
+      each_output = my_each_output.dup
+      my_each_output = ''
+      array.my_each(&block)
+      expect(my_each_output).to eq(each_output)
     end
 
     it 'returns an Enumerator if no block is given' do
-      expect([1, 2, 3, 4].my_each.class).to eq Enumerator
+      expect(array.my_each).to be_an(Enumerator)
     end
   end
 
-  context '#my_each_with_index' do
-    it 'calls block with two arguments, the item and its index' do
-      hash_with_two_arguments = {}
-      [1, 2, 3, 4].my_each_with_index do |value, index|
-        hash_with_two_arguments[index] = value
-      end
-      expect(hash_with_two_arguments[0]).to eq 1
+  describe 'my_each_with_index' do
+    it 'calls the given block once for each element in self' do
+      my_each_output = ''
+      block = proc { |num, idx| my_each_output += "Num: #{num}, idx: #{idx}\n" }
+      array.each_with_index(&block)
+      each_output = my_each_output.dup
+      my_each_output = ''
+      array.my_each_with_index(&block)
+      expect(my_each_output).to eq(each_output)
     end
 
     it 'returns an enumerator if no block is given' do
-      expect([1, 2, 3, 4].my_each_with_index.class).to eq Enumerator
+      expect(array.my_each_with_index).to be_an(Enumerator)
     end
   end
 
-  context '#my_select' do
-    it 'returns an array containing all elements for which the given block returns a true value.' do
-      actual = [2, 3, 4, 5, 6, 7].my_select(&:even?)
-      expected = [2, 4, 6]
-      expect(actual).to eq expected
+  describe 'my_select' do
+    it 'returns an array containing all elements of enum for which the given block returns a true value' do
+      expect(array.my_select(&block)).to eq(array.select(&block))
     end
 
-    it 'returns an Enumerator if no block is given' do
-      expect([1, 2, 3, 4].my_select.class).to eq Enumerator
+    it 'returns an enumerator if no block is given' do
+      expect(array.my_select).to be_an(Enumerator)
     end
   end
 
-  context '#my_all?' do
-    it 'passes each element of the collection to the given block' do
-      expected = []
-      actual = [2, 4, 5, 6]
-      actual.my_all? { |i| expected << i }
-      expect(actual).to eq expected
-    end
-
+  describe 'my_all?' do
+    let(:true_block) { proc { |num| num <= HIGHEST_VALUE } }
+    let(:false_block) { proc { |num| num > HIGHEST_VALUE } }
     it 'returns true if the block never returns false or nil' do
-      expect([1, 2, 3, 4, 5].my_all? { |i| i < 10 }).to be true
+      expect(array.my_all?(&true_block)).to eq(array.all?(&true_block))
+      expect(array.my_all?(&false_block)).to eq(array.all?(&false_block))
     end
 
-    context 'when no block is given' do
-      it 'return true when none of the collection members are false or nil ' do
-        expect([0, true, 3, 'hello'].my_all?).to be true
+    context 'when no block or argument is given' do
+      let(:true_array) { [1, true, 'hi', []] }
+      let(:false_array) { [1, false, 'hi', []] }
+      it 'returns true when none of the collection members are false or nil' do
+        expect(true_array.my_all?).to be true_array.all?
+        expect(false_array.my_all?).to be false_array.all?
+      end
+    end
+
+    context 'when a class is passed as an argument' do
+      it 'returns true if all of the collection is a member of such class' do
+        expect(array.my_all?(Integer)).to be array.all?(Integer)
+        array[0] = 'word'
+        expect(array.my_all?(Integer)).to be array.all?(Integer)
+      end
+    end
+
+    context 'when a Regex is passed as an argument' do
+      it 'returns true if all of the collection matches the Regex' do
+        expect(words.my_all?(/d/)).to be words.all?(/d/)
+        expect(words.my_all?(/o/)).to be words.all?(/o/)
+      end
+    end
+
+    context 'when a pattern other than Regex or a Class is given' do
+      it 'returns true if all of the collection matches the pattern' do
+        expect(array.my_all?(3)).to be array.all?(3)
+        array = []
+        5.times { array << 3 }
+        expect(array.my_all?(3)).to be array.all?(3)
       end
     end
   end
 
-  context '#my_any?' do
+  describe 'my_any?' do
+    let(:true_block) { proc { |num| num <= HIGHEST_VALUE } }
+    let(:false_block) { proc { |num| num > HIGHEST_VALUE } }
     it 'returns true if the block ever returns a value other than false or nil' do
-      expect([1, 2, 3, 4, 5].my_any? { |i| i < 2 }).to be true
+      expect(array.my_any?(&true_block)).to eq(array.any?(&true_block))
+      expect(array.my_any?(&false_block)).to eq(array.any?(&false_block))
     end
 
-    context 'when no block is given' do
-      it 'return true if at least one of the collection is not false or nil' do
-        expect([nil, false, 3, 'hello'].my_any?).to be true
+    context 'when no block or argument is given' do
+      let(:true_array) { [nil, false, true, []] }
+      let(:false_array) { [nil, false, nil, false] }
+      it 'returns true if at least one of the collection is not false or nil' do
+        expect(true_array.my_any?).to be true_array.any?
+        expect(false_array.my_any?).to be false_array.any?
       end
     end
 
     context 'when a class is passed as an argument' do
       it 'returns true if at least one of the collection is a member of such class' do
-        expect([nil, false, 3, 'hello'].my_any?(Integer)).to be true
+        expect(array.my_any?(Integer)).to be array.any?(Integer)
+        expect(words.my_any?(Integer)).to be words.any?(Integer)
       end
     end
 
     context 'when a Regex is passed as an argument' do
       it 'returns false if none of the collection matches the Regex' do
-        expect([nil, false, 3, 'hello'].my_any?(/d/)).to be false
+        expect(words.my_any?(/z/)).to be words.any?(/z/)
+        expect(words.my_any?(/d/)).to be words.any?(/d/)
+      end
+    end
+
+    context 'when a pattern other than Regex or a Class is given' do
+      it 'returns false if none of the collection matches the pattern' do
+        expect(words.my_any?('cat')).to be words.any?('cat')
+        words[0] = 'cat'
+        expect(words.my_any?('cat')).to be words.any?('cat')
       end
     end
   end
 
-  context '#my_none?' do
+  describe 'my_none?' do
+    let(:true_block) { proc { |num| num > HIGHEST_VALUE } }
+    let(:false_block) { proc { |num| num <= HIGHEST_VALUE } }
+    let(:true_array) { [nil, false, true, []] }
+    let(:false_array) { [nil, false, nil, false] }
     it 'returns true if the block never returns true for all elements' do
-      expect([1, 2, 3, 4, 5].my_none? { |i| i < 0 }).to be true
+      expect(array.my_none?(&true_block)).to eq(array.none?(&true_block))
+      expect(array.my_none?(&false_block)).to eq(array.none?(&false_block))
     end
 
-    context 'when no block is given' do
-      it 'return true only if none of the collection members is true' do
-        expect([nil, false, nil, false].my_none?).to be true
+    context 'when no block or argument is given' do
+      it 'returns true only if none of the collection members is true' do
+        expect(false_array.my_none?).to be true
+        expect(true_array.my_none?).to be false
       end
     end
 
     context 'when a class is passed as an argument' do
       it 'returns true if none of the collection is a member of such class' do
-        expect([nil, false, 3, ['hi']].my_none?(String)).to be true
+        expect(array.my_none?(String)).to be true
+        array[0] = 'hi'
+        expect(array.my_none?(String)).to be false
       end
     end
 
     context 'when a Regex is passed as an argument' do
       it 'returns true only if none of the collection matches the Regex' do
-        expect([nil, false, 3, 'hi'].my_none?(/o/)).to be true
+        expect(words.my_none?(/z/)).to be words.none?(/z/)
+        expect(words.my_none?(/d/)).to be words.none?(/d/)
+      end
+    end
+
+    context 'when a pattern other than Regex or a Class is given' do
+      it 'returns true only if none of the collection matches the pattern' do
+        expect(words.my_none?(5)).to be words.none?(5)
+        words[0] = 5
+        expect(words.my_none?(5)).to be words.none?(5)
       end
     end
   end
 
-  context '#my_count' do
+  describe 'my_count' do
     it 'returns the number of items in enum through enumeration' do
-      actual = [2, 4, 5, 6].my_count
-      expect(actual).to eq 4
+      expect(array.my_count).to eq array.count
     end
 
-    context 'when an argument is given' do
-      it 'counts the number of items in enum that are equal to argument given' do
-        actual = [2, 4, 5, 6].my_count(4)
-        expect(actual).to eq 1
-      end
+    it 'counts the number of items in enum that are equal to item if an argument is given' do
+      expect(array.my_count(LOWEST_VALUE)).to eq array.count(LOWEST_VALUE)
     end
 
-    context 'when a block is given' do
-      it 'counts the number of elements yielding a true value' do
-        actual = [2, 4, 5, 6].my_count(&:even?)
-        expect(actual).to eq 3
-      end
+    it 'counts the number of elements yielding a true value if a block is given' do
+      expect(array.my_count(&block)).to eq array.count(&block)
     end
   end
 
-  context '#my_map' do
-    it 'returns a new array with the results of running block once for every element' do
-      expected = [2, 4, 6, 8, 10]
-      actual = [1, 2, 3, 4, 5].my_map { |i| i * 2 }
-      expect(actual).to eq expected
+  describe 'my_map' do
+    it 'returns a new array with the results of running block once for every element in enum.' do
+      expect(array.my_map(&block)).to eq array.map(&block)
     end
 
     it 'returns an Enumerator if no block is given' do
-      expect([1, 2, 3, 4].my_map.class).to eq Enumerator
+      expect(array.my_map).to be_an(Enumerator)
     end
   end
 
-  context '#my_inject' do
-    it 'combines all elements of enum by applying a binary operation,' do
-      actual = (5..10).my_inject { |sum, n| sum + n }
-      expect(actual).to eq 45
+  describe 'my_inject' do
+    let(:operation) { proc { |sum, n| sum + n } }
+    let(:search) { proc { |memo, word| memo.length > word.length ? memo : word } }
+    it 'combines all elements of enum by applying a binary operation, specified by a block' do
+      expect(array.my_inject(&operation)).to eq array.inject(&operation)
+      actual = range.my_inject(4) { |prod, n| prod * n }
+      expected = range.inject(4) { |prod, n| prod * n }
+      expect(actual).to eq expected
+      expect(words.my_inject(&search)).to eq words.inject(&search)
+    end
+
+    context 'when a symbol is specified' do
+      it 'combines each element of the collection by applying the symbol as a named method' do
+        expect(array.my_inject(:+)).to eq array.inject(:+)
+        expect(range.my_inject(2, :*)).to eq range.inject(2, :*)
+      end
     end
   end
 
-  context '#multiply_els' do
+  describe '#multiply_els' do
     it 'multiplies all the elements of the array together' do
       actual = multiply_els [1, 2, 3, 4, 5]
       expect(actual).to eq 120
