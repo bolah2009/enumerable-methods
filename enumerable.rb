@@ -1,11 +1,10 @@
-# frozen_string_literal: true
-
 # Rebuild some basic enumerable methods in ruby.
 module Enumerable
+  # rubocop:disable Style/For
   def my_each
     return to_enum unless block_given?
 
-    each do |i|
+    for i in self
       yield(i)
     end
   end
@@ -14,11 +13,12 @@ module Enumerable
     return to_enum unless block_given?
 
     counter = 0
-    each do |i|
+    for i in self
       yield(i, counter)
       counter += 1
-    end
+      end
   end
+  # rubocop:enable Style/For
 
   def my_select
     return to_enum unless block_given?
@@ -29,20 +29,14 @@ module Enumerable
   end
 
   def my_all?(arg = nil)
-    if block_given?
-      my_each { |i| return false unless yield(i) }
-    elsif arg.class == Class
-      my_each { |i| return false unless i.class == arg }
-    elsif arg.class == Regexp
-      my_each { |i| return false unless (i =~ arg).is_a? Integer }
-    elsif arg.nil?
-      my_each { |i| return false unless i }
-    else
-      my_each { |i| return false unless i == arg }
-    end
+    my_each { |i| return false if yield(i) == false } if block_given?
+    my_each { |i| return false if i == false } if arg.nil?
+
     true
   end
 
+  # rubocop:disable Metrics/AbcSize, Metrics/PerceivedComplexity
+  # rubocop:disable Metrics/CyclomaticComplexity
   def my_any?(arg = nil)
     if block_given?
       my_each { |i| return true if yield(i) }
@@ -52,8 +46,6 @@ module Enumerable
       my_each { |i| return true if (i =~ arg).is_a? Integer }
     elsif arg.nil?
       my_each { |i| return true if i }
-    else
-      my_each { |i| return true if i == arg }
     end
     false
   end
@@ -67,12 +59,12 @@ module Enumerable
       my_each { |i| return false if (i =~ arg).is_a? Integer }
     elsif arg.nil?
       my_each { |i| return false if i }
-    else
-      my_each { |i| return false if i == arg }
     end
     true
   end
 
+  # rubocop:enable Metrics/AbcSize, Metrics/PerceivedComplexity
+  # rubocop:enable Metrics/CyclomaticComplexity
   def my_count(arg = nil)
     count = 0
     if block_given?
@@ -93,28 +85,10 @@ module Enumerable
     array
   end
 
-  def my_inject(arg_1 = nil, arg_2 = nil)
-    array = to_a.dup
-    (inject, sym) = if arg_1.nil?
-                      [array.shift, nil]
-                    elsif arg_2.nil? && !block_given?
-                      [array.shift, arg_1]
-                    elsif arg_2.nil? && block_given?
-                      [arg_1, nil]
-                    else
-                      [arg_1, arg_2]
-                    end
-
-    if sym
-      inject = inject_sym(array, sym, inject)
-    else
-      array[0..-1].my_each { |i| inject = yield(inject, i) }
-    end
-    inject
-  end
-
-  def inject_sym(array, sym, inject)
-    array[0..-1].my_each { |i| inject = inject.send(sym, i) }
+  def my_inject
+    array = to_a
+    inject = array[0]
+    array[1..-1].my_each { |i| inject = yield(inject, i) }
     inject
   end
 end
