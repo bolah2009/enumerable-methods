@@ -31,14 +31,10 @@ module Enumerable
   def my_all?(arg = nil)
     if block_given?
       my_each { |i| return false unless yield(i) }
-    elsif arg.class == Class
-      my_each { |i| return false unless i.class == arg }
-    elsif arg.class == Regexp
-      my_each { |i| return false unless (i =~ arg).is_a? Integer }
     elsif arg.nil?
       my_each { |i| return false unless i }
     else
-      my_each { |i| return false unless i == arg }
+      my_each { |i| return false unless arg === i }
     end
     true
   end
@@ -46,14 +42,10 @@ module Enumerable
   def my_any?(arg = nil)
     if block_given?
       my_each { |i| return true if yield(i) }
-    elsif arg.class == Class
-      my_each { |i| return true if i.class == arg }
-    elsif arg.class == Regexp
-      my_each { |i| return true if (i =~ arg).is_a? Integer }
     elsif arg.nil?
       my_each { |i| return true if i }
     else
-      my_each { |i| return true if i == arg }
+      my_each { |i| return true if arg === i }
     end
     false
   end
@@ -61,14 +53,10 @@ module Enumerable
   def my_none?(arg = nil)
     if block_given?
       my_each { |i| return false if yield(i) }
-    elsif arg.class == Class
-      my_each { |i| return false if i.class == arg }
-    elsif arg.class == Regexp
-      my_each { |i| return false if (i =~ arg).is_a? Integer }
     elsif arg.nil?
       my_each { |i| return false if i }
     else
-      my_each { |i| return false if i == arg }
+      my_each { |i| return false if arg === i }
     end
     true
   end
@@ -95,22 +83,26 @@ module Enumerable
 
   def my_inject(arg_1 = nil, arg_2 = nil)
     array = to_a.dup
-    (inject, sym) = if arg_1.nil?
-                      [array.shift, nil]
-                    elsif arg_2.nil? && !block_given?
-                      [array.shift, arg_1]
-                    elsif arg_2.nil? && block_given?
-                      [arg_1, nil]
-                    else
-                      [arg_1, arg_2]
-                    end
-
+    (inject, sym, array) = get_inject_and_sym(arg_1, arg_2, array, block_given?)
     if sym
       inject = inject_sym(array, sym, inject)
     else
       array[0..-1].my_each { |i| inject = yield(inject, i) }
     end
     inject
+  end
+
+  def get_inject_and_sym(arg1, arg2, arr, block)
+    inject_and_sym = if arg1.nil?
+                       [arr.shift, nil, arr]
+                     elsif arg2.nil? && !block
+                       [arr.shift, arg1, arr]
+                     elsif arg2.nil? && block
+                       [arg1, nil, arr]
+                     else
+                       [arg1, arg2, arr]
+                     end
+    inject_and_sym
   end
 
   def inject_sym(array, sym, inject)
