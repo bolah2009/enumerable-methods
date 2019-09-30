@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require 'rspec'
 require_relative '../lib/enumerable'
 
 ARRAY_SIZE = 100
