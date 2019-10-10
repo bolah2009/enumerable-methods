@@ -5,8 +5,10 @@ module Enumerable
   def my_each
     return to_enum unless block_given?
 
-    each do |i|
-      yield(i)
+    i = 0
+    while i < length
+      yield(self[i])
+      i += 1
     end
   end
 
@@ -14,9 +16,11 @@ module Enumerable
     return to_enum unless block_given?
 
     counter = 0
-    each do |i|
-      yield(i, counter)
+    i = 0
+    while i < length
+      yield(self[i], counter)
       counter += 1
+      i += 1
     end
   end
 
