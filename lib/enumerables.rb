@@ -10,6 +10,7 @@ module Enumerable
       yield(self[i])
       i += 1
     end
+    self
   end
 
   def my_each_with_index
@@ -22,6 +23,7 @@ module Enumerable
       counter += 1
       i += 1
     end
+    self
   end
 
   def my_select
@@ -38,7 +40,7 @@ module Enumerable
     elsif arg.nil?
       my_each { |i| return false unless i }
     else
-      my_each { |i| return false unless arg === i }
+      my_each { |i| return false unless arg === i } # rubocop:disable Style/CaseEquality
     end
     true
   end
@@ -49,7 +51,7 @@ module Enumerable
     elsif arg.nil?
       my_each { |i| return true if i }
     else
-      my_each { |i| return true if arg === i }
+      my_each { |i| return true if arg === i } # rubocop:disable Style/CaseEquality
     end
     false
   end
@@ -60,7 +62,7 @@ module Enumerable
     elsif arg.nil?
       my_each { |i| return false if i }
     else
-      my_each { |i| return false if arg === i }
+      my_each { |i| return false if arg === i } # rubocop:disable Style/CaseEquality
     end
     true
   end
