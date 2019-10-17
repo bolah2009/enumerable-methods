@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative '../lib/enumerable'
+require_relative '../lib/enumerables'
 
 ARRAY_SIZE = 100
 LOWEST_VALUE = 0
@@ -12,7 +12,7 @@ describe 'enumerables' do
   let(:words) { %w[dog door rod blade] }
   let(:range) { Range.new(5, 50) }
 
-  describe 'my_each' do
+  describe '#my_each' do
     it 'calls the given block once for each element in self' do
       my_each_output = ''
       block = proc { |num| my_each_output += num.to_s }
@@ -28,7 +28,7 @@ describe 'enumerables' do
     end
   end
 
-  describe 'my_each_with_index' do
+  describe '#my_each_with_index' do
     it 'calls the given block once for each element in self' do
       my_each_output = ''
       block = proc { |num, idx| my_each_output += "Num: #{num}, idx: #{idx}\n" }
@@ -44,7 +44,7 @@ describe 'enumerables' do
     end
   end
 
-  describe 'my_select' do
+  describe '#my_select' do
     it 'returns an array containing all elements of enum for which the given block returns a true value' do
       expect(array.my_select(&block)).to eq(array.select(&block))
     end
@@ -54,7 +54,7 @@ describe 'enumerables' do
     end
   end
 
-  describe 'my_all?' do
+  describe '#my_all?' do
     let(:true_block) { proc { |num| num <= HIGHEST_VALUE } }
     let(:false_block) { proc { |num| num > HIGHEST_VALUE } }
     it 'returns true if the block never returns false or nil' do
@@ -96,7 +96,7 @@ describe 'enumerables' do
     end
   end
 
-  describe 'my_any?' do
+  describe '#my_any?' do
     let(:true_block) { proc { |num| num <= HIGHEST_VALUE } }
     let(:false_block) { proc { |num| num > HIGHEST_VALUE } }
     it 'returns true if the block ever returns a value other than false or nil' do
@@ -136,7 +136,7 @@ describe 'enumerables' do
     end
   end
 
-  describe 'my_none?' do
+  describe '#my_none?' do
     let(:true_block) { proc { |num| num > HIGHEST_VALUE } }
     let(:false_block) { proc { |num| num <= HIGHEST_VALUE } }
     let(:true_array) { [nil, false, true, []] }
@@ -177,7 +177,7 @@ describe 'enumerables' do
     end
   end
 
-  describe 'my_count' do
+  describe '#my_count' do
     it 'returns the number of items in enum through enumeration' do
       expect(array.my_count).to eq array.count
     end
@@ -191,7 +191,7 @@ describe 'enumerables' do
     end
   end
 
-  describe 'my_map' do
+  describe '#my_map' do
     it 'returns a new array with the results of running block once for every element in enum.' do
       expect(array.my_map(&block)).to eq array.map(&block)
     end
@@ -201,7 +201,7 @@ describe 'enumerables' do
     end
   end
 
-  describe 'my_inject' do
+  describe '#my_inject' do
     let(:operation) { proc { |sum, n| sum + n } }
     let(:search) { proc { |memo, word| memo.length > word.length ? memo : word } }
     it 'combines all elements of enum by applying a binary operation, specified by a block' do
