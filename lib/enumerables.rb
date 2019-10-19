@@ -7,7 +7,7 @@ module Enumerable
 
     i = 0
     while i < length
-      yield(self[i])
+      yield at i
       i += 1
     end
     self
@@ -19,7 +19,7 @@ module Enumerable
     counter = 0
     i = 0
     while i < length
-      yield(self[i], counter)
+      yield(at(i), counter)
       counter += 1
       i += 1
     end
@@ -40,31 +40,24 @@ module Enumerable
     elsif arg.nil?
       my_each { |i| return false unless i }
     else
-      my_each { |i| return false unless arg === i } # rubocop:disable Style/CaseEquality
+      my_each { |i| return false unless check_pattern(i, arg) }
     end
     true
   end
 
-  def my_any?(arg = nil)
-    if block_given?
-      my_each { |i| return true if yield(i) }
+  def my_any?(arg = nil, &block)
+    if block
+      my_each { |i| return true if block.call(i) }
     elsif arg.nil?
       my_each { |i| return true if i }
     else
-      my_each { |i| return true if arg === i } # rubocop:disable Style/CaseEquality
+      my_each { |i| return true if check_pattern(i, arg) }
     end
     false
   end
 
-  def my_none?(arg = nil)
-    if block_given?
-      my_each { |i| return false if yield(i) }
-    elsif arg.nil?
-      my_each { |i| return false if i }
-    else
-      my_each { |i| return false if arg === i } # rubocop:disable Style/CaseEquality
-    end
-    true
+  def my_none?(arg = nil, &block)
+    !my_any?(arg, &block)
   end
 
   def my_count(arg = nil)
@@ -96,6 +89,16 @@ module Enumerable
       array[0..-1].my_each { |i| inject = yield(inject, i) }
     end
     inject
+  end
+
+  private
+
+  def check_pattern(index, arg)
+    return index.class == arg if arg.is_a? Class
+
+    return arg.match?(index) if arg.is_a? Regexp
+
+    index == arg
   end
 
   def get_inject_and_sym(arg1, arg2, arr, block)
