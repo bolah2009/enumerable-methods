@@ -11,6 +11,7 @@ describe 'enumerables' do
   let(:block) { proc { |num| num < (LOWEST_VALUE + HIGHEST_VALUE) / 2 } }
   let(:words) { %w[dog door rod blade] }
   let(:range) { Range.new(5, 50) }
+  let(:hash) { { a: 1, b: 2, c: 3, d: 4, e: 5 } }
   let(:numbers) { [1, 2i, 3.14] }
 
   describe '#my_each' do
@@ -21,6 +22,29 @@ describe 'enumerables' do
       each_output = my_each_output.dup
       my_each_output = ''
       array.my_each(&block)
+
+      expect(my_each_output).to eq(each_output)
+    end
+
+    it 'calls the given block once for each element in self, when self is a Range' do
+      my_each_output = ''
+      block = proc { |num| my_each_output += num.to_s }
+      range.each(&block)
+      each_output = my_each_output.dup
+      my_each_output = ''
+      range.my_each(&block)
+
+      expect(my_each_output).to eq(each_output)
+    end
+
+    it 'calls the given block once for each element in self, when self is a Hash' do
+      my_each_output = ''
+      block = proc { |num| my_each_output += num.to_s }
+      hash.each(&block)
+      each_output = my_each_output.dup
+      my_each_output = ''
+      hash.my_each(&block)
+
       expect(my_each_output).to eq(each_output)
       expect(range.my_each(&block)).to eq(range.each(&block))
     end
@@ -40,6 +64,26 @@ describe 'enumerables' do
       array.my_each_with_index(&block)
       expect(my_each_output).to eq(each_output)
       expect(range.my_each_with_index(&block)).to eq(range.each_with_index(&block))
+    end
+
+    it 'calls the given block once for each element in self, when self is a Range' do
+      my_each_output = ''
+      block = proc { |num, idx| my_each_output += "Num: #{num}, idx: #{idx}\n" }
+      range.each_with_index(&block)
+      each_output = my_each_output.dup
+      my_each_output = ''
+      range.my_each_with_index(&block)
+      expect(my_each_output).to eq(each_output)
+    end
+
+    it 'calls the given block once for each element in self,  when self is a Hash' do
+      my_each_output = ''
+      block = proc { |num, idx| my_each_output += "Num: #{num}, idx: #{idx}\n" }
+      hash.each_with_index(&block)
+      each_output = my_each_output.dup
+      my_each_output = ''
+      hash.my_each_with_index(&block)
+      expect(my_each_output).to eq(each_output)
     end
 
     it 'returns an enumerator if no block is given' do
