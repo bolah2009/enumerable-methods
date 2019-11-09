@@ -11,6 +11,7 @@ describe 'enumerables' do
   let(:block) { proc { |num| num < (LOWEST_VALUE + HIGHEST_VALUE) / 2 } }
   let(:words) { %w[dog door rod blade] }
   let(:range) { Range.new(5, 50) }
+  let(:numbers) { [1, 2i, 3.14] }
 
   describe '#my_each' do
     it 'calls the given block once for each element in self' do
@@ -21,6 +22,7 @@ describe 'enumerables' do
       my_each_output = ''
       array.my_each(&block)
       expect(my_each_output).to eq(each_output)
+      expect(range.my_each(&block)).to eq(range.each(&block))
     end
 
     it 'returns an Enumerator if no block is given' do
@@ -37,6 +39,7 @@ describe 'enumerables' do
       my_each_output = ''
       array.my_each_with_index(&block)
       expect(my_each_output).to eq(each_output)
+      expect(range.my_each_with_index(&block)).to eq(range.each_with_index(&block))
     end
 
     it 'returns an enumerator if no block is given' do
@@ -47,6 +50,7 @@ describe 'enumerables' do
   describe '#my_select' do
     it 'returns an array containing all elements of enum for which the given block returns a true value' do
       expect(array.my_select(&block)).to eq(array.select(&block))
+      expect(range.my_select(&block)).to eq(range.select(&block))
     end
 
     it 'returns an enumerator if no block is given' do
@@ -60,6 +64,7 @@ describe 'enumerables' do
     it 'returns true if the block never returns false or nil' do
       expect(array.my_all?(&true_block)).to eq(array.all?(&true_block))
       expect(array.my_all?(&false_block)).to eq(array.all?(&false_block))
+      expect(range.my_all?(&false_block)).to eq(range.all?(&false_block))
     end
 
     context 'when no block or argument is given' do
@@ -76,6 +81,7 @@ describe 'enumerables' do
         expect(array.my_all?(Integer)).to be array.all?(Integer)
         array[0] = 'word'
         expect(array.my_all?(Integer)).to be array.all?(Integer)
+        expect(numbers.my_all?(Numeric)).to be numbers.all?(Numeric)
       end
     end
 
@@ -102,6 +108,7 @@ describe 'enumerables' do
     it 'returns true if the block ever returns a value other than false or nil' do
       expect(array.my_any?(&true_block)).to eq(array.any?(&true_block))
       expect(array.my_any?(&false_block)).to eq(array.any?(&false_block))
+      expect(range.my_any?(&false_block)).to eq(range.any?(&false_block))
     end
 
     context 'when no block or argument is given' do
@@ -115,7 +122,7 @@ describe 'enumerables' do
 
     context 'when a class is passed as an argument' do
       it 'returns true if at least one of the collection is a member of such class' do
-        expect(array.my_any?(Integer)).to be array.any?(Integer)
+        expect(array.my_any?(Numeric)).to be array.any?(Numeric)
         expect(words.my_any?(Integer)).to be words.any?(Integer)
       end
     end
@@ -144,6 +151,7 @@ describe 'enumerables' do
     it 'returns true if the block never returns true for all elements' do
       expect(array.my_none?(&true_block)).to eq(array.none?(&true_block))
       expect(array.my_none?(&false_block)).to eq(array.none?(&false_block))
+      expect(range.my_none?(&false_block)).to eq(range.none?(&false_block))
     end
 
     context 'when no block or argument is given' do
@@ -155,9 +163,10 @@ describe 'enumerables' do
 
     context 'when a class is passed as an argument' do
       it 'returns true if none of the collection is a member of such class' do
-        expect(array.my_none?(String)).to be true
+        expect(array.my_none?(String)).to be array.my_none?(String)
         array[0] = 'hi'
-        expect(array.my_none?(String)).to be false
+        expect(array.my_none?(String)).to be array.my_none?(String)
+        expect(array.my_none?(Numeric)).to be array.my_none?(Numeric)
       end
     end
 
@@ -180,6 +189,7 @@ describe 'enumerables' do
   describe '#my_count' do
     it 'returns the number of items in enum through enumeration' do
       expect(array.my_count).to eq array.count
+      expect(range.my_count).to eq range.count
     end
 
     it 'counts the number of items in enum that are equal to item if an argument is given' do
@@ -194,6 +204,7 @@ describe 'enumerables' do
   describe '#my_map' do
     it 'returns a new array with the results of running block once for every element in enum.' do
       expect(array.my_map(&block)).to eq array.map(&block)
+      expect(range.my_map(&block)).to eq range.map(&block)
     end
 
     it 'returns an Enumerator if no block is given' do
@@ -204,26 +215,51 @@ describe 'enumerables' do
   describe '#my_inject' do
     let(:operation) { proc { |sum, n| sum + n } }
     let(:search) { proc { |memo, word| memo.length > word.length ? memo : word } }
-    it 'combines all elements of enum by applying a binary operation, specified by a block' do
-      expect(array.my_inject(&operation)).to eq array.inject(&operation)
-      actual = range.my_inject(4) { |prod, n| prod * n }
-      expected = range.inject(4) { |prod, n| prod * n }
-      expect(actual).to eq expected
+
+    it 'raises a "LocalJumpError" when no block or argument is given' do
+      expect { array.my_inject }.to raise_error(LocalJumpError)
+    end
+
+    it 'searches for the longest word in an array of strings' do
       expect(words.my_inject(&search)).to eq words.inject(&search)
     end
 
-    context 'when a symbol is specified' do
+    context 'when a block is given without an initail value' do
+      it 'combines all elements of enum by applying a binary operation, specified by a block' do
+        expect(array.my_inject(&operation)).to eq array.inject(&operation)
+        actual = range.my_inject { |prod, n| prod * n }
+        expected = range.inject { |prod, n| prod * n }
+        expect(actual).to eq expected
+      end
+    end
+
+    context 'when a block is given with an initail value' do
+      it 'combines all elements of enum by applying a binary operation, specified by a block' do
+        actual = range.my_inject(4) { |prod, n| prod * n }
+        expected = range.inject(4) { |prod, n| prod * n }
+        expect(actual).to eq expected
+      end
+    end
+
+    context 'when a symbol is specified without an initail value' do
       it 'combines each element of the collection by applying the symbol as a named method' do
         expect(array.my_inject(:+)).to eq array.inject(:+)
+        expect(range.my_inject(:*)).to eq range.inject(:*)
+      end
+    end
+
+    context 'when a symbol is specified with an initail value' do
+      it 'combines each element of the collection by applying the symbol as a named method' do
         expect(range.my_inject(2, :*)).to eq range.inject(2, :*)
+        expect(array.my_inject(20, :*)).to eq array.inject(20, :*)
       end
     end
   end
 
   describe '#multiply_els' do
-    it 'multiplies all the elements of the array together' do
-      actual = multiply_els [1, 2, 3, 4, 5]
-      expect(actual).to eq 120
+    it 'accepts an array as an argument and multiplies all the elements of the array together using #my_inject' do
+      actual = multiply_els [2, 4, 5]
+      expect(actual).to eq 40
     end
   end
 end

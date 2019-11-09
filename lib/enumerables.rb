@@ -3,23 +3,25 @@
 # Rebuild some basic enumerable methods in ruby.
 module Enumerable
   def my_each
-    return to_enum unless block_given?
+    return to_enum(:my_each) unless block_given?
 
+    arr = to_a.dup
     i = 0
-    while i < length
-      yield at i
+    while i < arr.length
+      yield arr[i]
       i += 1
     end
     self
   end
 
   def my_each_with_index
-    return to_enum unless block_given?
+    return to_enum(:my_each) unless block_given?
 
+    arr = to_a.dup
     counter = 0
     i = 0
-    while i < length
-      yield(at(i), counter)
+    while i < arr.length
+      yield(arr[i], counter)
       counter += 1
       i += 1
     end
@@ -27,7 +29,7 @@ module Enumerable
   end
 
   def my_select
-    return to_enum unless block_given?
+    return to_enum(:my_select) unless block_given?
 
     array = []
     my_each { |i| array << i if yield(i) }
@@ -47,7 +49,7 @@ module Enumerable
 
   def my_any?(arg = nil, &block)
     if block
-      my_each { |i| return true if block.call(i) }
+      my_each { |i| return true if block.yield(i) }
     elsif arg.nil?
       my_each { |i| return true if i }
     else
@@ -73,28 +75,28 @@ module Enumerable
   end
 
   def my_map
-    return to_enum unless block_given?
+    return to_enum(:my_map) unless block_given?
 
     array = []
     my_each { |i| array << yield(i) }
     array
   end
 
-  def my_inject(arg_1 = nil, arg_2 = nil)
+  def my_inject(arg_1 = nil, arg_2 = nil, &block)
     array = to_a.dup
     (inject, sym, array) = get_inject_and_sym(arg_1, arg_2, array, block_given?)
-    if sym
-      inject = inject_sym(array, sym, inject)
-    else
-      array[0..-1].my_each { |i| inject = yield(inject, i) }
-    end
+    inject = if sym
+               inject_sym(array, sym, inject)
+             else
+               inject_block(array, inject, &block)
+             end
     inject
   end
 
   private
 
   def check_pattern(index, arg)
-    return index.class == arg if arg.is_a? Class
+    return index.is_a?(arg) if arg.is_a? Class
 
     return arg.match?(index) if arg.is_a? Regexp
 
@@ -102,20 +104,22 @@ module Enumerable
   end
 
   def get_inject_and_sym(arg1, arg2, arr, block)
-    inject_and_sym = if arg1.nil?
-                       [arr.shift, nil, arr]
-                     elsif arg2.nil? && !block
-                       [arr.shift, arg1, arr]
-                     elsif arg2.nil? && block
-                       [arg1, nil, arr]
-                     else
-                       [arg1, arg2, arr]
-                     end
-    inject_and_sym
+    arg1 = arr.shift if arg1.nil? && block
+    return [arg1, nil, arr] if block
+    return [arr.shift, arg1, arr] if arg2.nil?
+
+    [arg1, arg2, arr]
   end
 
   def inject_sym(array, sym, inject)
     array[0..-1].my_each { |i| inject = inject.send(sym, i) }
+    inject
+  end
+
+  def inject_block(array, inject, &block)
+    raise LocalJumpError, 'no block given' unless block
+
+    array[0..-1].my_each { |i| inject = block.yield(inject, i) }
     inject
   end
 end
